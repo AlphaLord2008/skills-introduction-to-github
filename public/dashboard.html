@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – ChargeLink</title>
+  <meta name="description" content="View nearby charge requests and helpers on the ChargeLink live map." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+</head>
+<body>
+
+  <!-- Injected Nav -->
+  <div id="nav-placeholder"></div>
+
+  <!-- Dashboard Layout: 60% map / 40% panel -->
+  <div class="dashboard-layout">
+
+    <!-- ===== LEFT: CSS MAP ===== -->
+    <div class="dashboard-map-container">
+
+      <!-- Grid overlay -->
+      <div class="dashboard-map-grid"></div>
+
+      <!-- Streets (horizontal) -->
+      <div class="map-street-h" style="top: 28%;"></div>
+      <div class="map-street-h" style="top: 57%;"></div>
+      <div class="map-street-h" style="top: 82%;"></div>
+
+      <!-- Streets (vertical) -->
+      <div class="map-street-v" style="left: 22%;"></div>
+      <div class="map-street-v" style="left: 50%;"></div>
+      <div class="map-street-v" style="left: 76%;"></div>
+
+      <!-- Buildings (CSS rectangles simulating city blocks) -->
+      <div class="map-block" style="top: 4%; left: 4%; width: 14%; height: 20%;"></div>
+      <div class="map-block" style="top: 4%; left: 27%; width: 18%; height: 19%;"></div>
+      <div class="map-block" style="top: 4%; left: 55%; width: 16%; height: 21%;"></div>
+      <div class="map-block" style="top: 4%; left: 80%; width: 16%; height: 21%;"></div>
+
+      <div class="map-block" style="top: 34%; left: 4%; width: 14%; height: 18%;"></div>
+      <div class="map-block" style="top: 34%; left: 27%; width: 18%; height: 18%;"></div>
+      <div class="map-block" style="top: 34%; left: 55%; width: 16%; height: 18%;"></div>
+      <div class="map-block" style="top: 34%; left: 80%; width: 16%; height: 18%;"></div>
+
+      <div class="map-block" style="top: 63%; left: 4%; width: 14%; height: 16%;"></div>
+      <div class="map-block" style="top: 63%; left: 27%; width: 18%; height: 16%;"></div>
+      <div class="map-block" style="top: 63%; left: 55%; width: 16%; height: 16%;"></div>
+      <div class="map-block" style="top: 63%; left: 80%; width: 16%; height: 16%;"></div>
+
+      <!-- Building labels -->
+      <div class="map-block-label" style="top: 4%; left: 4%; width: 14%; height: 20%; font-size: 0.55rem; color: #9a8f7e;">OFFICE</div>
+      <div class="map-block-label" style="top: 63%; left: 27%; width: 18%; height: 16%; font-size: 0.55rem; color: #9a8f7e;">CAFÉ</div>
+      <div class="map-block-label" style="top: 63%; left: 55%; width: 16%; height: 16%; font-size: 0.55rem; color: #9a8f7e;">MALL</div>
+
+      <!-- *** MAP PINS *** -->
+
+      <!-- YOU (green, center-ish) -->
+      <div class="map-pin" style="top: 47%; left: 49%;">
+        <div class="map-pin-dot green">
+          <span>🔋</span>
+        </div>
+        <div class="map-pin-label" style="background: var(--primary); color: white;">You</div>
+      </div>
+
+      <!-- Alex (blue, 0.3km) -->
+      <div class="map-pin" style="top: 22%; left: 34%;">
+        <div class="map-pin-dot blue">
+          <span>📍</span>
+        </div>
+        <div class="map-pin-label">Alex 0.3km</div>
+      </div>
+
+      <!-- Sam (blue, 0.7km) -->
+      <div class="map-pin" style="top: 58%; left: 68%;">
+        <div class="map-pin-dot blue">
+          <span>📍</span>
+        </div>
+        <div class="map-pin-label">Sam 0.7km</div>
+      </div>
+
+      <!-- Riley (blue, 1.1km) — shows in helper mode -->
+      <div class="map-pin" style="top: 14%; left: 72%;" id="riley-pin">
+        <div class="map-pin-dot blue">
+          <span>📍</span>
+        </div>
+        <div class="map-pin-label">Riley 1.1km</div>
+      </div>
+
+      <!-- Jordan (green helper) — shows in seeker mode match -->
+      <div class="map-pin" id="jordan-pin" style="top: 36%; left: 62%; display: none;">
+        <div class="map-pin-dot green">
+          <span>🔌</span>
+        </div>
+        <div class="map-pin-label" style="background: var(--primary); color: white;">Jordan 0.4km</div>
+      </div>
+
+      <!-- Map legend -->
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot green"></div> Helper / You</div>
+        <div class="legend-item"><div class="legend-dot blue"></div> Seeker</div>
+      </div>
+
+      <!-- Map zoom controls -->
+      <div class="map-controls">
+        <button class="map-control-btn" title="Zoom in" onclick="return false;">+</button>
+        <button class="map-control-btn" title="Zoom out" onclick="return false;">−</button>
+        <button class="map-control-btn" title="My location" onclick="return false;">📍</button>
+      </div>
+
+      <!-- Location note -->
+      <div style="
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: rgba(255,255,255,0.92);
+        border-radius: var(--radius-sm);
+        padding: 0.35rem 0.75rem;
+        font-size: 0.72rem;
+        color: var(--gray-600);
+        box-shadow: var(--shadow-sm);
+      ">📍 Approximate location only</div>
+
+    </div>
+
+    <!-- ===== RIGHT: PANEL ===== -->
+    <div class="dashboard-panel">
+
+      <!-- ===== SEEKER MODE: Finding helpers ===== -->
+      <div id="finding-section" style="display: none;">
+        <div class="panel-header">
+          <h2>🔍 Finding Your Charger</h2>
+          <p>Scanning nearby helpers for a USB-C cable...</p>
+        </div>
+        <div class="finding-section">
+          <div class="finding-pulse">⚡</div>
+          <div class="finding-title">Finding helpers near you...</div>
+          <div class="finding-subtitle">Looking for USB-C cables within 0.5 km. This usually takes less than 2 minutes.</div>
+          <div class="finding-dots">
+            <div class="finding-dot"></div>
+            <div class="finding-dot"></div>
+            <div class="finding-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SEEKER MODE: Match found (shown after 2s) ===== -->
+      <div id="match-section" style="display: none;">
+        <div class="panel-header">
+          <h2>🎉 Match Found!</h2>
+          <p>A helper with a USB-C cable is nearby.</p>
+        </div>
+        <div class="panel-body">
+          <div class="match-card">
+            <div class="match-card-header">
+              <div>
+                <span class="match-badge">Match Found</span>
+                <h3 style="margin-top: 0.4rem;">Jordan has a USB-C cable ⚡</h3>
+              </div>
+            </div>
+            <div class="match-card-body">
+              <div class="match-helper-info">
+                <div class="match-avatar">J</div>
+                <div>
+                  <div class="match-helper-name">Jordan K.</div>
+                  <div class="match-helper-meta"><strong>⭐ 4.8</strong> &nbsp;·&nbsp; 47 charges given &nbsp;·&nbsp; 0.4 km away</div>
+                </div>
+              </div>
+
+              <div class="match-detail-row">
+                <span class="md-icon">🔌</span>
+                <span class="md-label">Cable</span>
+                <span class="md-value">USB-C (USB 3.2, fast charge)</span>
+              </div>
+              <div class="match-detail-row">
+                <span class="md-icon">📍</span>
+                <span class="md-label">Meet at</span>
+                <span class="md-value">Nearby Coffee Shop — 42 Main St</span>
+              </div>
+              <div class="match-detail-row">
+                <span class="md-icon">⏱️</span>
+                <span class="md-label">Est. walk</span>
+                <span class="md-value">~5 minutes</span>
+              </div>
+              <div class="match-detail-row">
+                <span class="md-icon">🛡️</span>
+                <span class="md-label">Safety</span>
+                <span class="md-value" style="color: var(--primary-dark);">Verified user · Public spot</span>
+              </div>
+
+              <div class="match-actions">
+                <a href="#" class="btn btn-primary" id="directions-btn">📍 Get Directions</a>
+                <a href="#" class="btn btn-secondary" id="contact-btn">💬 Contact Jordan</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Post-match tips -->
+          <div style="background: var(--gray-100); border-radius: var(--radius-md); padding: 1rem; font-size: 0.82rem; color: var(--gray-600);">
+            <strong style="color: var(--dark); display: block; margin-bottom: 0.4rem;">💡 What happens next?</strong>
+            Head to the suggested meetup spot. Jordan will be notified and on their way. After the charge, please rate your experience!
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== HELPER MODE: Nearby requests ===== -->
+      <div id="requests-panel">
+        <div class="panel-header">
+          <h2>Nearby Requests</h2>
+          <p>
+            <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 1.5s infinite;"></span>
+              Live — 3 requests near you
+            </span>
+          </p>
+        </div>
+
+        <div class="panel-body">
+
+          <!-- Alex Card -->
+          <div class="request-card">
+            <div class="request-card-header">
+              <div class="request-user">
+                <div class="user-avatar blue">A</div>
+                <div class="user-info">
+                  <div class="user-name">Alex M.</div>
+                  <div class="user-rating">⭐ 4.6 &nbsp;·&nbsp; 8 charges received</div>
+                </div>
+              </div>
+              <span class="distance-badge">0.3 km</span>
+            </div>
+            <div class="request-details">
+              <span class="detail-tag">🔌 needs USB-C</span>
+              <span class="detail-tag urgent">8% battery 🔋</span>
+              <span class="detail-tag">⏱ 1 min ago</span>
+            </div>
+            <button class="btn btn-primary btn-block offer-help-btn" style="margin-top: 0.25rem;">Offer Help</button>
+          </div>
+
+          <!-- Sam Card -->
+          <div class="request-card">
+            <div class="request-card-header">
+              <div class="request-user">
+                <div class="user-avatar purple">S</div>
+                <div class="user-info">
+                  <div class="user-name">Sam T.</div>
+                  <div class="user-rating">⭐ 4.9 &nbsp;·&nbsp; 3 charges received</div>
+                </div>
+              </div>
+              <span class="distance-badge">0.7 km</span>
+            </div>
+            <div class="request-details">
+              <span class="detail-tag">⚡ needs Lightning</span>
+              <span class="detail-tag urgent">12% battery 🔋</span>
+              <span class="detail-tag">⏱ 3 min ago</span>
+            </div>
+            <button class="btn btn-primary btn-block offer-help-btn" style="margin-top: 0.25rem;">Offer Help</button>
+          </div>
+
+          <!-- Riley Card -->
+          <div class="request-card" style="opacity: 0.85;">
+            <div class="request-card-header">
+              <div class="request-user">
+                <div class="user-avatar orange">R</div>
+                <div class="user-info">
+                  <div class="user-name">Riley P.</div>
+                  <div class="user-rating">⭐ 4.3 &nbsp;·&nbsp; 12 charges received</div>
+                </div>
+              </div>
+              <span class="distance-badge" style="background: #FEF3C7; color: #92400E;">1.1 km</span>
+            </div>
+            <div class="request-details">
+              <span class="detail-tag">📡 needs Wireless</span>
+              <span class="detail-tag" style="background: #DCFCE7; color: #166534;">23% battery 🔋</span>
+              <span class="detail-tag">⏱ 7 min ago</span>
+            </div>
+            <button class="btn btn-primary btn-block offer-help-btn" style="margin-top: 0.25rem;">Offer Help</button>
+          </div>
+
+          <!-- Empty state hint -->
+          <div style="text-align: center; padding: 1rem; color: var(--gray-400); font-size: 0.82rem;">
+            <span>Showing requests within 1.5 km &nbsp;·&nbsp;</span>
+            <a href="#" style="color: var(--accent); font-weight: 600; text-decoration: none;">Expand radius</a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    <!-- end .dashboard-panel -->
+
+  </div>
+  <!-- end .dashboard-layout -->
+
+  <!-- Footer -->
+  <div id="footer-placeholder"></div>
+
+  <script src="app.js"></script>
+  <script>
+    // Show Jordan pin when match is revealed
+    document.addEventListener('DOMContentLoaded', function () {
+      const mode = new URLSearchParams(window.location.search).get('mode');
+      if (mode === 'seeker') {
+        setTimeout(function () {
+          const jordanPin = document.getElementById('jordan-pin');
+          if (jordanPin) {
+            jordanPin.style.display = 'flex';
+            jordanPin.style.animation = 'bounceIn 0.5s ease';
+          }
+        }, 2000);
+      }
+    });
+  </script>
+</body>
+</html>

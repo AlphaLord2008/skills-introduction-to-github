@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Dashboard – ChargeLink</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <style>
+    /* Live dashboard specific styles */
+    #live-map { width: 100%; height: calc(100vh - 64px); }
+    .live-layout { display: grid; grid-template-columns: 1fr 380px; height: calc(100vh - 64px); }
+    .live-sidebar { background: white; border-left: 1px solid #E2E8F0; overflow-y: auto; display: flex; flex-direction: column; }
+    .live-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #E2E8F0; background: white; position: sticky; top: 0; z-index: 5; }
+    .live-header h2 { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin-bottom: 0.2rem; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; display: inline-block; animation: pulse 1.5s infinite; margin-right: 0.4rem; }
+    .user-card { background: white; border: 1.5px solid #E2E8F0; border-radius: 16px; padding: 1rem; margin-bottom: 0.75rem; transition: all 0.25s; }
+    .user-card:hover { border-color: #BFDBFE; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+    .user-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+    .user-avatar-live { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: white; flex-shrink: 0; }
+    .avatar-green { background: linear-gradient(135deg, #22C55E, #16A34A); }
+    .avatar-blue { background: linear-gradient(135deg, #3B82F6, #60A5FA); }
+    .dist-pill { background: #EFF6FF; color: #1D4ED8; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .user-name-live { font-weight: 700; font-size: 0.95rem; color: #0F172A; }
+    .user-meta-live { font-size: 0.75rem; color: #475569; }
+    .tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; margin-right: 0.4rem; }
+    .tag-green { background: #DCFCE7; color: #166534; }
+    .tag-blue { background: #DBEAFE; color: #1D4ED8; }
+    .tag-red { background: #FEF2F2; color: #DC2626; }
+    .offer-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: #22C55E; color: white; border: none; border-radius: 999px; font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; }
+    .offer-btn:hover { background: #16A34A; transform: translateY(-1px); }
+    .offer-btn:disabled { background: #86EFAC; cursor: not-allowed; transform: none; }
+    /* Role modal */
+    .role-modal { position: fixed; inset: 0; background: rgba(15,23,42,0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .role-card { background: white; border-radius: 24px; padding: 2.5rem; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,0.3); animation: bounceIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+    .role-card h2 { font-size: 1.5rem; font-weight: 800; color: #0F172A; margin-bottom: 0.5rem; }
+    .role-card p { color: #475569; font-size: 0.95rem; margin-bottom: 2rem; }
+    .role-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .role-btn { padding: 1.5rem 1rem; border-radius: 16px; border: 2px solid #E2E8F0; cursor: pointer; background: white; transition: all 0.2s; font-family: inherit; }
+    .role-btn:hover { border-color: #22C55E; background: #F0FDF4; transform: translateY(-2px); }
+    .role-btn .role-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+    .role-btn .role-name { font-weight: 700; font-size: 1rem; color: #0F172A; }
+    .role-btn .role-desc { font-size: 0.78rem; color: #475569; margin-top: 0.2rem; }
+    /* Leaflet custom markers */
+    .custom-marker { width: 36px; height: 36px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+    .marker-inner { transform: rotate(45deg); font-size: 1.1rem; }
+    .marker-green { background: #22C55E; }
+    .marker-blue { background: #3B82F6; }
+    .you-marker { width: 20px; height: 20px; background: #22C55E; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 4px rgba(34,197,94,0.3), 0 4px 12px rgba(0,0,0,0.2); animation: batteryPulse 2s infinite; }
+    @keyframes batteryPulse { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.7),0 4px 12px rgba(0,0,0,0.2)}40%{box-shadow:0 0 0 12px rgba(34,197,94,0.2),0 4px 12px rgba(0,0,0,0.2)}80%{box-shadow:0 0 0 20px rgba(34,197,94,0),0 4px 12px rgba(0,0,0,0.2)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0),0 4px 12px rgba(0,0,0,0.2)} }
+    @keyframes bounceIn { 0%{transform:scale(0.7);opacity:0}60%{transform:scale(1.05);opacity:1}100%{transform:scale(1)} }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+    .empty-state { text-align: center; padding: 3rem 1.5rem; color: #94A3B8; }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .live-body { padding: 1.25rem; flex: 1; }
+    .section-label-live { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94A3B8; margin-bottom: 0.75rem; }
+    /* Toast notification */
+    .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #0F172A; color: white; padding: 1rem 1.5rem; border-radius: 999px; font-size: 0.9rem; font-weight: 600; z-index: 9998; box-shadow: 0 8px 24px rgba(0,0,0,0.3); animation: toastIn 0.3s ease; }
+    @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)} }
+    @media (max-width: 768px) { .live-layout { grid-template-columns: 1fr; } #live-map { height: 50vh; } .live-sidebar { max-height: 50vh; } }
+  </style>
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+
+  <!-- Role selection modal -->
+  <div class="role-modal" id="role-modal">
+    <div class="role-card">
+      <div style="font-size:3rem;margin-bottom:1rem;">⚡</div>
+      <h2>Join Live Map</h2>
+      <p>Your real location will be shared with nearby users. What are you here to do?</p>
+      <div class="role-btns">
+        <button class="role-btn" onclick="selectRole('seeker')">
+          <span class="role-icon">🔋</span>
+          <div class="role-name">I Need a Charge</div>
+          <div class="role-desc">Find someone nearby</div>
+        </button>
+        <button class="role-btn" onclick="selectRole('helper')">
+          <span class="role-icon">🤝</span>
+          <div class="role-name">I Can Help</div>
+          <div class="role-desc">Share my charger</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="live-layout">
+    <!-- Map -->
+    <div id="live-map"></div>
+
+    <!-- Sidebar -->
+    <div class="live-sidebar">
+      <div class="live-header">
+        <h2 id="sidebar-title">⚡ Live Map</h2>
+        <div style="font-size:0.82rem;color:#475569;">
+          <span class="live-dot"></span>
+          <span id="online-count">0 people</span> online near you
+        </div>
+      </div>
+      <div class="live-body" id="users-list">
+        <div class="empty-state">
+          <div class="empty-icon">📡</div>
+          <div>Detecting your location...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+  <script>
+    const socket = io();
+    let myRole = null;
+    let myLat = null;
+    let myLon = null;
+    let myId = socket.id;
+    let map = null;
+    let markers = {};
+    let myMarker = null;
+    let allUsers = [];
+
+    // Haversine distance in km
+    function distance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function selectRole(role) {
+      myRole = role;
+      document.getElementById('role-modal').style.display = 'none';
+      document.getElementById('sidebar-title').textContent = role === 'seeker' ? '🔋 Finding Helpers' : '🤝 Nearby Requests';
+      initLocation();
+    }
+
+    function initLocation() {
+      if (!navigator.geolocation) {
+        alert('Geolocation not supported');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        myLat = pos.coords.latitude;
+        myLon = pos.coords.longitude;
+        initMap();
+        registerUser();
+        watchLocation();
+      }, function() {
+        // Demo fallback - Oakville, ON
+        myLat = 43.4675;
+        myLon = -79.6877;
+        initMap();
+        registerUser();
+      });
+    }
+
+    function initMap() {
+      map = L.map('live-map').setView([myLat, myLon], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      // My location marker
+      const youIcon = L.divIcon({ className: '', html: '<div class="you-marker"></div>', iconSize: [20,20], iconAnchor: [10,10] });
+      myMarker = L.marker([myLat, myLon], { icon: youIcon }).addTo(map).bindPopup('📍 You');
+    }
+
+    function registerUser() {
+      const names = ['Alex', 'Jordan', 'Sam', 'Riley', 'Morgan', 'Casey', 'Taylor', 'Drew'];
+      const myName = names[Math.floor(Math.random() * names.length)];
+      socket.emit('register', {
+        lat: myLat, lon: myLon, role: myRole,
+        name: myName,
+        charger: 'USB-C',
+        battery: myRole === 'seeker' ? Math.floor(Math.random() * 20) + 3 : null
+      });
+    }
+
+    function watchLocation() {
+      navigator.geolocation.watchPosition(function(pos) {
+        myLat = pos.coords.latitude;
+        myLon = pos.coords.longitude;
+        if (myMarker) myMarker.setLatLng([myLat, myLon]);
+        socket.emit('location_update', { lat: myLat, lon: myLon });
+      }, null, { enableHighAccuracy: true, maximumAge: 3000 });
+    }
+
+    function createMarkerIcon(user) {
+      const isHelper = user.role === 'helper';
+      const color = isHelper ? 'marker-green' : 'marker-blue';
+      const emoji = isHelper ? '⚡' : '🔋';
+      return L.divIcon({
+        className: '',
+        html: `<div class="custom-marker ${color}"><span class="marker-inner">${emoji}</span></div>`,
+        iconSize: [36,36],
+        iconAnchor: [18,36],
+        popupAnchor: [0,-36]
+      });
+    }
+
+    socket.on('users_update', function(users) {
+      allUsers = users;
+      const others = users.filter(u => u.id !== socket.id);
+
+      // Update markers
+      const currentIds = new Set(others.map(u => u.id));
+      Object.keys(markers).forEach(id => {
+        if (!currentIds.has(id)) { map && markers[id].remove(); delete markers[id]; }
+      });
+
+      others.forEach(user => {
+        if (!map) return;
+        if (markers[user.id]) {
+          markers[user.id].setLatLng([user.lat, user.lon]);
+        } else {
+          markers[user.id] = L.marker([user.lat, user.lon], { icon: createMarkerIcon(user) })
+            .addTo(map)
+            .bindPopup(`<strong>${user.name}</strong><br>${user.role === 'helper' ? '⚡ Has charger' : '🔋 Needs charge'}${user.battery ? '<br>Battery: ' + user.battery + '%' : ''}`);
+        }
+      });
+
+      // Update sidebar
+      renderSidebar(others);
+    });
+
+    function renderSidebar(others) {
+      const list = document.getElementById('users-list');
+      document.getElementById('online-count').textContent = others.length + ' ' + (others.length === 1 ? 'person' : 'people');
+
+      if (!myLat || others.length === 0) {
+        const label = myRole === 'seeker' ? 'helpers' : 'seekers';
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">${myRole === 'seeker' ? '⚡' : '🔋'}</div><div>No ${label} nearby yet.<br><small>Share the link with friends!</small></div></div>`;
+        return;
+      }
+
+      const filtered = others
+        .filter(u => myRole === 'seeker' ? u.role === 'helper' : u.role === 'seeker')
+        .map(u => ({ ...u, dist: distance(myLat, myLon, u.lat, u.lon) }))
+        .sort((a, b) => a.dist - b.dist);
+
+      const label = myRole === 'seeker' ? 'HELPERS NEARBY' : 'REQUESTS NEARBY';
+      let html = `<div class="section-label-live">${label}</div>`;
+
+      if (filtered.length === 0) {
+        html += `<div class="empty-state"><div class="empty-icon">${myRole === 'seeker' ? '⚡' : '🔋'}</div><div>None nearby yet</div></div>`;
+      } else {
+        filtered.forEach(u => {
+          const distStr = u.dist < 1 ? Math.round(u.dist * 1000) + 'm' : u.dist.toFixed(1) + 'km';
+          const batteryTag = u.battery ? `<span class="tag tag-red">${u.battery}% 🔋</span>` : '';
+          const chargerTag = `<span class="tag tag-green">⚡ ${u.charger || 'USB-C'}</span>`;
+          html += `
+            <div class="user-card" id="card-${u.id}">
+              <div class="user-card-top">
+                <div style="display:flex;align-items:center;gap:0.65rem;">
+                  <div class="user-avatar-live ${u.role === 'helper' ? 'avatar-green' : 'avatar-blue'}">${u.name[0]}</div>
+                  <div>
+                    <div class="user-name-live">${u.name}</div>
+                    <div class="user-meta-live">${u.role === 'helper' ? '⚡ Has charger' : '🔋 Needs charge'}</div>
+                  </div>
+                </div>
+                <span class="dist-pill">${distStr}</span>
+              </div>
+              <div style="margin-bottom:0.5rem;">${chargerTag}${batteryTag}</div>
+              <button class="offer-btn" onclick="offerHelp('${u.id}', this)">${myRole === 'seeker' ? '⚡ Request Help' : '🤝 Offer Help'}</button>
+            </div>`;
+        });
+      }
+
+      list.innerHTML = html;
+    }
+
+    function offerHelp(targetId, btn) {
+      socket.emit('offer_help', { targetId });
+      btn.textContent = '✓ Sent!';
+      btn.disabled = true;
+      btn.style.background = '#16A34A';
+    }
+
+    function showToast(message) {
+      const existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    socket.on('help_offered', function(data) {
+      showToast(`🤝 ${data.fromName} wants to help with ${data.charger || 'a charger'}!`);
+    });
+  </script>
+</body>
+</html>
