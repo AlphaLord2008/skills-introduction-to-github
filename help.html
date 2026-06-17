@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I Can Help – ChargeLink</title>
+  <meta name="description" content="Become a ChargeLink helper. Toggle your availability and help people near you who need a charge." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+</head>
+<body>
+
+  <!-- Injected Nav -->
+  <div id="nav-placeholder"></div>
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <h1>🤝 I Can Help</h1>
+    <p>Toggle your availability and let people around you know you have a spare charge.</p>
+  </div>
+
+  <!-- Helper intro quick stats -->
+  <div class="container" style="padding-top: 2.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2.5rem;">
+      <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 1.25rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">⏱️</div>
+        <div style="font-weight: 700; font-size: 0.9rem; color: var(--dark); margin-bottom: 0.2rem;">Quick &amp; Easy</div>
+        <div style="font-size: 0.78rem; color: var(--gray-600);">Most meetups take under 5 minutes total</div>
+      </div>
+      <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 1.25rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">⭐</div>
+        <div style="font-weight: 700; font-size: 0.9rem; color: var(--dark); margin-bottom: 0.2rem;">Build Your Rep</div>
+        <div style="font-size: 0.78rem; color: var(--gray-600);">Earn ratings and badges for helping others</div>
+      </div>
+      <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 1.25rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🛡️</div>
+        <div style="font-weight: 700; font-size: 0.9rem; color: var(--dark); margin-bottom: 0.2rem;">Always Safe</div>
+        <div style="font-size: 0.78rem; color: var(--gray-600);">Public meetups only, verified users</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AVAILABILITY TOGGLE ===== -->
+  <div class="toggle-section">
+
+    <div class="toggle-wrapper" id="toggle-wrapper">
+      <div>
+        <div class="toggle-label">Available to Help</div>
+        <div class="toggle-sublabel" id="toggle-sublabel">Tap to go live — nearby seekers will find you</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="availability-toggle" aria-label="Toggle availability to help" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <!-- Live status message, shown when toggle is ON -->
+    <div class="toggle-status-msg" id="toggle-status-msg">
+      <span class="status-icon">✅</span>
+      <div class="status-text">
+        <strong>You're live!</strong>
+        <span>Nearby requests will appear on your dashboard. You'll be notified when someone needs a charge near you.</span>
+      </div>
+    </div>
+
+    <!-- Go to Dashboard button, shown when toggle is ON -->
+    <div id="go-dashboard-btn" style="display: none; width: 100%; margin-top: 1rem;">
+      <a href="dashboard.html?mode=helper" class="btn btn-primary btn-lg btn-block">
+        📍 Go to Dashboard
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ===== EQUIPMENT CHECKLIST ===== -->
+  <div class="checklist-section">
+    <div style="height: 1px; background: var(--gray-200); margin: 0.5rem 0 2rem;"></div>
+
+    <div class="checklist-title">🔌 What equipment do you have?</div>
+    <p style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 1.25rem;">Check everything you currently have with you. This helps us match you to the right requests.</p>
+
+    <div class="checklist-grid">
+      <label class="checklist-item">
+        <input type="checkbox" id="check-usbc" />
+        <span>⚡ USB-C Cable</span>
+      </label>
+      <label class="checklist-item">
+        <input type="checkbox" id="check-lightning" />
+        <span>🔌 Lightning Cable</span>
+      </label>
+      <label class="checklist-item">
+        <input type="checkbox" id="check-microusb" />
+        <span>🔋 Micro USB Cable</span>
+      </label>
+      <label class="checklist-item">
+        <input type="checkbox" id="check-pb5k" />
+        <span>🔋 Power Bank 5000mAh+</span>
+      </label>
+      <label class="checklist-item">
+        <input type="checkbox" id="check-pb10k" />
+        <span>⚡ Power Bank 10000mAh+</span>
+      </label>
+      <label class="checklist-item">
+        <input type="checkbox" id="check-wireless" />
+        <span>📡 Reverse Wireless Charging</span>
+      </label>
+    </div>
+
+    <!-- Equipment saved confirmation (shown after any checkbox ticked) -->
+    <div id="equipment-summary" style="display: none; background: var(--primary-light); border: 1px solid #86EFAC; border-radius: var(--radius-md); padding: 0.9rem 1rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: var(--primary-dark); animation: slideInUp 0.3s ease;">
+      ✅ <strong>Equipment profile updated!</strong> Seekers will be matched to you based on your selected charger types.
+    </div>
+
+    <div style="height: 1px; background: var(--gray-200); margin: 1.5rem 0 2rem;"></div>
+  </div>
+
+  <!-- ===== YOUR HELPER STATS ===== -->
+  <div class="container" style="margin-bottom: 2rem;">
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-xl); padding: 1.75rem; box-shadow: var(--shadow-sm);">
+      <h3 style="font-size: 1rem; font-weight: 800; color: var(--dark); margin-bottom: 0.25rem;">Your Helper Profile</h3>
+      <p style="font-size: 0.82rem; color: var(--gray-600); margin-bottom: 1.25rem;">Stats are updated after each successful charge session.</p>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+        <div style="background: var(--light-bg); border-radius: var(--radius-md); padding: 1rem;">
+          <div style="font-size: 1.8rem; font-weight: 800; color: var(--dark);">0</div>
+          <div style="font-size: 0.78rem; color: var(--gray-600); font-weight: 500; margin-top: 0.2rem;">Charges Given</div>
+        </div>
+        <div style="background: var(--light-bg); border-radius: var(--radius-md); padding: 1rem;">
+          <div style="font-size: 1.8rem; font-weight: 800; color: var(--dark);">—</div>
+          <div style="font-size: 0.78rem; color: var(--gray-600); font-weight: 500; margin-top: 0.2rem;">Avg Rating</div>
+        </div>
+        <div style="background: var(--primary-light); border-radius: var(--radius-md); padding: 1rem;">
+          <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary-dark);">New ✨</div>
+          <div style="font-size: 0.78rem; color: var(--gray-600); font-weight: 500; margin-top: 0.2rem;">Helper Status</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SAFETY TIPS ===== -->
+  <div class="container" style="padding-bottom: 3rem;">
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark); margin-bottom: 1.25rem;">🛡️ Safety Tips for Helpers</h3>
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+          <span style="font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem;">📍</span>
+          <div>
+            <strong style="font-size: 0.88rem; color: var(--dark);">Always suggest a public spot</strong>
+            <div style="font-size: 0.82rem; color: var(--gray-600); margin-top: 0.1rem;">Cafes, lobbies, plazas — somewhere well-lit and busy. Never a private location.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+          <span style="font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem;">⏱️</span>
+          <div>
+            <strong style="font-size: 0.88rem; color: var(--dark);">Respond quickly</strong>
+            <div style="font-size: 0.82rem; color: var(--gray-600); margin-top: 0.1rem;">People requesting charges are often in urgent situations. Fast responses earn better ratings.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+          <span style="font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem;">⭐</span>
+          <div>
+            <strong style="font-size: 0.88rem; color: var(--dark);">Rate every interaction</strong>
+            <div style="font-size: 0.82rem; color: var(--gray-600); margin-top: 0.1rem;">Your ratings help keep the community trustworthy. Always leave an honest review after helping.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+          <span style="font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem;">❌</span>
+          <div>
+            <strong style="font-size: 0.88rem; color: var(--dark);">Cancel anytime — no explanation needed</strong>
+            <div style="font-size: 0.82rem; color: var(--gray-600); margin-top: 0.1rem;">If anything feels off about a request, cancel immediately. Your safety always comes first.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div id="footer-placeholder"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Equipment checklist: show summary message whenever any box is checked
+      const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+      const equipmentSummary = document.getElementById('equipment-summary');
+
+      checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          const anyChecked = Array.from(checkboxes).some(function (c) { return c.checked; });
+          if (equipmentSummary) {
+            equipmentSummary.style.display = anyChecked ? 'block' : 'none';
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

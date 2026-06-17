@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request a Charge – ChargeLink</title>
+  <meta name="description" content="Tell us what charger you need and we'll find a nearby helper in minutes." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <style>
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    .charger-grid.shake {
+      animation: shake 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Injected Nav -->
+  <div id="nav-placeholder"></div>
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <h1>🔋 Request a Charge</h1>
+    <p>We'll find a verified helper near you — usually in under 2 minutes.</p>
+  </div>
+
+  <!-- Progress Indicator -->
+  <div class="container">
+    <div class="progress-indicator" id="progress-indicator">
+      <div class="progress-step">
+        <div class="progress-circle active" id="circle-1">1</div>
+        <div class="progress-label active" id="label-1">Charger Type</div>
+      </div>
+      <div class="progress-line" id="line-1"></div>
+      <div class="progress-step">
+        <div class="progress-circle" id="circle-2">2</div>
+        <div class="progress-label" id="label-2">Search Radius</div>
+      </div>
+      <div class="progress-line" id="line-2"></div>
+      <div class="progress-step">
+        <div class="progress-circle" id="circle-3">3</div>
+        <div class="progress-label" id="label-3">Location</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wizard Container -->
+  <div class="wizard-container">
+
+    <!-- ===================== STEP 1: Charger Type ===================== -->
+    <div class="wizard-step active" id="step-1">
+      <h2 class="step-heading">What charger do you need?</h2>
+      <p class="step-subheading">Select the type of cable or charging method your phone uses.</p>
+
+      <div class="charger-grid" id="charger-grid">
+        <div class="charger-card" data-charger="usb-c" tabindex="0" role="button" aria-pressed="false">
+          <span class="charger-icon">🔌</span>
+          <div class="charger-name">USB-C</div>
+          <div class="charger-desc">Most modern Android &amp; iPhone 15+</div>
+        </div>
+        <div class="charger-card" data-charger="lightning" tabindex="0" role="button" aria-pressed="false">
+          <span class="charger-icon">⚡</span>
+          <div class="charger-name">Lightning</div>
+          <div class="charger-desc">iPhone 14 and earlier, AirPods</div>
+        </div>
+        <div class="charger-card" data-charger="micro-usb" tabindex="0" role="button" aria-pressed="false">
+          <span class="charger-icon">🔋</span>
+          <div class="charger-name">Micro USB</div>
+          <div class="charger-desc">Older Android phones &amp; accessories</div>
+        </div>
+        <div class="charger-card" data-charger="wireless" tabindex="0" role="button" aria-pressed="false">
+          <span class="charger-icon">📡</span>
+          <div class="charger-name">Wireless</div>
+          <div class="charger-desc">Qi wireless charging pad</div>
+        </div>
+      </div>
+
+      <p class="validation-msg" id="charger-validation">⚠️ Please select a charger type to continue.</p>
+
+      <div class="wizard-nav">
+        <button class="btn btn-primary btn-lg" style="flex: 1;" data-action="next">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ===================== STEP 2: Search Radius ===================== -->
+    <div class="wizard-step" id="step-2">
+      <h2 class="step-heading">How far can you meet?</h2>
+      <p class="step-subheading">Set the search radius for finding helpers. A shorter range means faster meetups.</p>
+
+      <div class="slider-section">
+        <div class="slider-label-row">
+          <span style="font-size: 0.9rem; font-weight: 600; color: var(--gray-600);">Search radius</span>
+          <div>
+            <span class="slider-current" id="radius-value">0.5</span>
+            <span class="slider-unit"> km</span>
+          </div>
+        </div>
+        <input
+          type="range"
+          class="radius-slider"
+          id="radius-slider"
+          min="0.1"
+          max="2"
+          step="0.1"
+          value="0.5"
+          aria-label="Search radius in kilometers"
+        />
+        <div class="slider-ticks">
+          <span>0.1 km</span>
+          <span>0.5 km</span>
+          <span>1 km</span>
+          <span>1.5 km</span>
+          <span>2 km</span>
+        </div>
+      </div>
+
+      <!-- Radius Preset Cards -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.75rem;">
+        <div
+          style="background: var(--primary-light); border: 1.5px solid #86EFAC; border-radius: var(--radius-md); padding: 0.85rem; text-align: center; cursor: pointer; transition: var(--transition);"
+          onclick="setRadius(0.3)"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'"
+        >
+          <div style="font-size: 1.3rem; margin-bottom: 0.2rem;">🏃</div>
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--primary-dark);">Quick</div>
+          <div style="font-size: 0.75rem; color: var(--gray-600);">~0.3 km walk</div>
+        </div>
+        <div
+          style="background: var(--accent-light); border: 1.5px solid #93C5FD; border-radius: var(--radius-md); padding: 0.85rem; text-align: center; cursor: pointer; transition: var(--transition);"
+          onclick="setRadius(0.7)"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'"
+        >
+          <div style="font-size: 1.3rem; margin-bottom: 0.2rem;">🚶</div>
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--accent-dark);">Normal</div>
+          <div style="font-size: 0.75rem; color: var(--gray-600);">~0.7 km walk</div>
+        </div>
+        <div
+          style="background: #FEF3C7; border: 1.5px solid #FCD34D; border-radius: var(--radius-md); padding: 0.85rem; text-align: center; cursor: pointer; transition: var(--transition);"
+          onclick="setRadius(1.5)"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'"
+        >
+          <div style="font-size: 1.3rem; margin-bottom: 0.2rem;">🚴</div>
+          <div style="font-size: 0.82rem; font-weight: 700; color: #92400E;">Extended</div>
+          <div style="font-size: 0.75rem; color: var(--gray-600);">~1.5 km range</div>
+        </div>
+      </div>
+
+      <!-- Helper count estimate -->
+      <div style="background: var(--gray-100); border-radius: var(--radius-md); padding: 0.85rem 1rem; display: flex; gap: 0.6rem; align-items: center; margin-bottom: 1.5rem; font-size: 0.88rem; color: var(--gray-600);">
+        <span style="font-size: 1rem;">👥</span>
+        <span>Estimated <strong style="color: var(--dark);" id="helper-estimate">~12 helpers</strong> available within <span id="radius-display">0.5</span> km of you right now.</span>
+      </div>
+
+      <div class="wizard-nav">
+        <button class="btn btn-secondary" style="flex: 0 0 auto;" data-action="back">← Back</button>
+        <button class="btn btn-primary" style="flex: 1;" data-action="next">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ===================== STEP 3: Location Confirmation ===================== -->
+    <div class="wizard-step" id="step-3">
+      <h2 class="step-heading">Confirm your location</h2>
+      <p class="step-subheading">We use your approximate area only — your exact address is never shared with helpers.</p>
+
+      <!-- Styled CSS Map -->
+      <div class="map-placeholder" role="img" aria-label="Map showing your approximate location">
+        <!-- Grid overlay -->
+        <div class="map-grid"></div>
+
+        <!-- Horizontal roads -->
+        <div class="map-road-h" style="top: 30%;"></div>
+        <div class="map-road-h" style="top: 62%;"></div>
+
+        <!-- Vertical roads -->
+        <div class="map-road-v" style="left: 28%;"></div>
+        <div class="map-road-v" style="left: 68%;"></div>
+
+        <!-- Buildings -->
+        <div class="map-building" style="top: 6%; left: 4%; width: 20%; height: 20%;"></div>
+        <div class="map-building" style="top: 6%; left: 33%; width: 28%; height: 18%;"></div>
+        <div class="map-building" style="top: 6%; left: 72%; width: 22%; height: 22%;"></div>
+        <div class="map-building" style="top: 40%; left: 4%; width: 18%; height: 16%;"></div>
+        <div class="map-building" style="top: 40%; left: 72%; width: 22%; height: 17%;"></div>
+        <div class="map-building" style="top: 72%; left: 4%; width: 20%; height: 20%;"></div>
+        <div class="map-building" style="top: 72%; left: 33%; width: 28%; height: 20%;"></div>
+        <div class="map-building" style="top: 72%; left: 72%; width: 20%; height: 20%;"></div>
+
+        <!-- Search radius circle (decorative) -->
+        <div style="
+          position: absolute;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          width: 140px;
+          height: 140px;
+          border-radius: 50%;
+          border: 2px dashed rgba(34,197,94,0.5);
+          background: rgba(34,197,94,0.08);
+          pointer-events: none;
+        "></div>
+
+        <!-- Center Pin -->
+        <div class="map-pin-center">
+          <span class="map-pin-emoji">📍</span>
+        </div>
+      </div>
+
+      <div class="map-location-text">
+        <span>📍</span>
+        <span>Using your approximate location — <strong>Central District, ~<span id="confirm-radius">0.5</span>km radius</strong></span>
+      </div>
+
+      <!-- Privacy notice -->
+      <div style="background: var(--accent-light); border: 1px solid #93C5FD; border-radius: var(--radius-md); padding: 1rem 1.1rem; display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1.5rem;">
+        <span style="font-size: 1.1rem; flex-shrink: 0;">🛡️</span>
+        <div>
+          <strong style="font-size: 0.88rem; color: var(--accent-dark); display: block; margin-bottom: 0.2rem;">Your privacy is protected</strong>
+          <span style="font-size: 0.82rem; color: #1E40AF; line-height: 1.5;">Helpers only see your approximate neighborhood. Your exact street address is never revealed. A safe public meeting spot will be suggested automatically.</span>
+        </div>
+      </div>
+
+      <!-- Request summary box -->
+      <div style="background: white; border: 1.5px solid var(--gray-200); border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.78rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem;">Your Request Summary</div>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+          <span class="detail-tag">🔌 <strong id="summary-charger" style="margin-left: 0.25rem;">USB-C</strong></span>
+          <span class="detail-tag">📍 Radius: <strong id="summary-radius" style="margin-left: 0.25rem;">0.5 km</strong></span>
+          <span class="detail-tag">⏱ Est. match: <strong style="margin-left: 0.25rem;">~2 min</strong></span>
+          <span class="detail-tag">👥 Helpers nearby: <strong style="margin-left: 0.25rem;" id="summary-helpers">~12</strong></span>
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <button class="btn btn-secondary" style="flex: 0 0 auto;" data-action="back">← Back</button>
+        <button class="btn btn-primary btn-lg" style="flex: 1;" id="submit-btn">🔋 Find My Charger</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div id="footer-placeholder"></div>
+
+  <script src="app.js"></script>
+  <script>
+    // Radius quick-set helper
+    function setRadius(val) {
+      const slider = document.getElementById('radius-slider');
+      const label = document.getElementById('radius-value');
+      const display = document.getElementById('radius-display');
+      const confirmRadius = document.getElementById('confirm-radius');
+      const summaryRadius = document.getElementById('summary-radius');
+      const helperEst = document.getElementById('helper-estimate');
+      const summaryHelpers = document.getElementById('summary-helpers');
+
+      if (slider) slider.value = val;
+      if (label) label.textContent = val.toFixed(1);
+      if (display) display.textContent = val.toFixed(1);
+      if (confirmRadius) confirmRadius.textContent = val.toFixed(1);
+      if (summaryRadius) summaryRadius.textContent = val.toFixed(1) + ' km';
+
+      const helpers = Math.round(val * 22);
+      const helperStr = '~' + helpers + ' helpers';
+      if (helperEst) helperEst.textContent = helperStr;
+      if (summaryHelpers) summaryHelpers.textContent = helperStr;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const slider = document.getElementById('radius-slider');
+      const chargerNames = {
+        'usb-c': 'USB-C',
+        'lightning': 'Lightning',
+        'micro-usb': 'Micro USB',
+        'wireless': 'Wireless'
+      };
+
+      if (slider) {
+        slider.addEventListener('input', function () {
+          const val = parseFloat(this.value);
+          const display = document.getElementById('radius-display');
+          const confirmRadius = document.getElementById('confirm-radius');
+          const summaryRadius = document.getElementById('summary-radius');
+          const helperEst = document.getElementById('helper-estimate');
+          const summaryHelpers = document.getElementById('summary-helpers');
+          const label = document.getElementById('radius-value');
+
+          if (label) label.textContent = val.toFixed(1);
+          if (display) display.textContent = val.toFixed(1);
+          if (confirmRadius) confirmRadius.textContent = val.toFixed(1);
+          if (summaryRadius) summaryRadius.textContent = val.toFixed(1) + ' km';
+
+          const helpers = Math.round(val * 22);
+          const helperStr = '~' + helpers + ' helpers';
+          if (helperEst) helperEst.textContent = helperStr;
+          if (summaryHelpers) summaryHelpers.textContent = helperStr;
+        });
+      }
+
+      // Update charger summary
+      document.querySelectorAll('.charger-card').forEach(card => {
+        card.addEventListener('click', function () {
+          const summaryCharger = document.getElementById('summary-charger');
+          if (summaryCharger) {
+            summaryCharger.textContent = chargerNames[this.dataset.charger] || this.dataset.charger;
+          }
+        });
+
+        // Keyboard support
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.click();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
