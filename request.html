@@ -216,7 +216,7 @@
 
       <div class="map-location-text">
         <span>📍</span>
-        <span>Using your approximate location — <strong>Central District, ~<span id="confirm-radius">0.5</span>km radius</strong></span>
+        <span>Using your approximate location — <strong><span id="detected-neighborhood">📍 Detecting location...</span>, ~<span id="confirm-radius">0.5</span>km radius</strong></span>
       </div>
 
       <!-- Privacy notice -->
@@ -320,6 +320,35 @@
             e.preventDefault();
             this.click();
           }
+        });
+      });
+    });
+    function detectLocation() {
+      var el = document.getElementById('detected-neighborhood');
+      if (!el) return;
+      if (!navigator.geolocation) { el.textContent = 'Your area'; return; }
+      el.textContent = '📍 Detecting...';
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + pos.coords.latitude + '&lon=' + pos.coords.longitude)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            var name = (data.address && (data.address.suburb || data.address.neighbourhood || data.address.town || data.address.city)) || 'Your area';
+            el.textContent = name;
+          })
+          .catch(function() { el.textContent = 'Your area'; });
+      }, function() { el.textContent = 'Your area'; });
+    }
+
+    // Call detectLocation when step 3 becomes active
+    var _origNext = document.querySelectorAll('[data-action="next"]');
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('[data-action="next"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setTimeout(function() {
+            if (document.getElementById('step-3') && document.getElementById('step-3').classList.contains('active')) {
+              detectLocation();
+            }
+          }, 50);
         });
       });
     });
