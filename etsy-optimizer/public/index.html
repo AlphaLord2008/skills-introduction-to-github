@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etsy Listing Optimizer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <h1>Etsy Listing Optimizer</h1>
+      <p class="subtitle">Upload a product photo, add a bit of context, and get a ready-to-paste Etsy listing.</p>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <h2>1. Product photo</h2>
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="photoInput" accept="image/*" hidden />
+          <div id="dropzoneEmpty" class="dropzone-empty">
+            <p><strong>Click to upload</strong> or drag and drop</p>
+            <p class="hint">PNG, JPG, or WEBP</p>
+          </div>
+          <img id="preview" class="preview" alt="Product preview" hidden />
+        </div>
+
+        <h2>2. Seller context <span class="optional">(optional, but helps)</span></h2>
+        <form id="contextForm" class="context-form">
+          <label>
+            Material
+            <input type="text" id="material" placeholder="e.g. sterling silver, oak wood" />
+          </label>
+
+          <label>
+            Listing type
+            <select id="listingType">
+              <option value="">Not specified</option>
+              <option value="Handmade">Handmade</option>
+              <option value="Vintage">Vintage</option>
+              <option value="Print on demand (POD)">Print on demand (POD)</option>
+            </select>
+          </label>
+
+          <label>
+            Target occasion
+            <input type="text" id="occasion" placeholder="e.g. birthday, wedding, housewarming" />
+          </label>
+
+          <label>
+            Price point (USD)
+            <input type="number" id="pricePoint" min="0" step="0.01" placeholder="e.g. 24.99" />
+          </label>
+
+          <label>
+            Shipping cost (USD)
+            <input type="number" id="shippingCost" min="0" step="0.01" placeholder="e.g. 5.50" />
+          </label>
+        </form>
+
+        <button id="generateBtn" class="primary-btn" type="button">Generate Listing</button>
+        <div id="errorBox" class="error-box" hidden></div>
+      </section>
+
+      <section class="panel results-panel">
+        <h2>3. Optimized listing</h2>
+        <div id="loading" class="loading" hidden>
+          <div class="spinner"></div>
+          <p>Generating your listing&hellip; this can take a few seconds.</p>
+        </div>
+
+        <div id="results" class="results" hidden>
+          <div class="field-block">
+            <div class="field-label-row">
+              <label>Title <span id="titleCount" class="char-count"></span></label>
+              <button class="copy-btn" data-copy-target="titleValue">Copy</button>
+            </div>
+            <div id="titleValue" class="field-value"></div>
+          </div>
+
+          <div class="field-block">
+            <div class="field-label-row">
+              <label>Tags (13)</label>
+              <button class="copy-btn" data-copy-target="tagsValue">Copy</button>
+            </div>
+            <ul id="tagsValue" class="tags-list"></ul>
+          </div>
+
+          <div class="field-block">
+            <div class="field-label-row">
+              <label>Description</label>
+              <button class="copy-btn" data-copy-target="descriptionValue">Copy</button>
+            </div>
+            <div id="descriptionValue" class="field-value description-value"></div>
+          </div>
+
+          <div id="shippingWarning" class="shipping-warning" hidden></div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          <p>Your generated listing will appear here.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
